@@ -1,4 +1,4 @@
-import os
+import os, sys
 
 
 debug = True
@@ -22,7 +22,7 @@ def pretty_print_string(level, pretty):
     """
     if pretty:
         for idx in range(level):
-            print '   ',
+            sys.stdout.write('   ')
 
 class xmlAttribute(object):
     '''
@@ -41,7 +41,7 @@ class xmlAttribute(object):
         Print out the attribute
         """
         if self.value is not '':
-            print ' ' + self.attrName + '="' + self.value + '"',
+            sys.stdout.write(' ' + self.attrName + '="' + self.value + '"')
             # os.write(fd, ' ' + self.attrName + '="' + self.value + '"')
 
     def XMLToString(self):
@@ -61,7 +61,7 @@ class textElement(object):
     def printXML(self, level=0, pretty=True):
         if self.value is not '':
             pretty_print_string(level, pretty)
-            print self.value + eol_,
+            sys.stdout.write(self.value + eol_)
 
 class xmlElement(object):
     '''
@@ -72,7 +72,6 @@ class xmlElement(object):
         self.tagName = tagName
         self.children = []
         self.attributes = []
-        self.value = ''
         self.karMin = 0
         self.karMax = -1
         self.namespace = namespace
@@ -102,26 +101,23 @@ class xmlElement(object):
         if self.printed == 0:
             # pretty_print(fd, level, pretty)
             pretty_print_string(level, pretty)
-            print '<' + self.completeTagName,
+            sys.stdout.write('<' + self.completeTagName)
             # os.write(fd, '<' + self.completeTagName)
-            for a in self.attributes:
-                a.printXML()
-        if self.children or self.value is not '' or self.containsFiles:
+            for attribute in self.attributes:
+                attribute.printXML()
+        if self.children or self.containsFiles:
             if self.printed == 0:
-                print '>' + eol_,
+                sys.stdout.write('>' + eol_)
                 # os.write(fd, '>' + eol_)
             if not self.containsFiles or self.printed == 1:
                 for child in self.children:
                     if child.printXML(level + 1, pretty):
                         self.printed = 1
                         return True
-                if self.value is not '':
-                    pretty_print_string(level+1, pretty)
-                    print self.value + eol_,
                     # pretty_print(fd, level + 1, pretty)
                     # os.write(fd, self.value + eol_)
                 pretty_print_string(level, pretty)
-                print '</' + self.completeTagName + '>' + eol_,
+                sys.stdout.write('</' + self.completeTagName + '>' + eol_)
                 # pretty_print(fd, level, pretty)
                 # os.write(fd, '</' + self.completeTagName + '>' + eol_)
                 self.printed = 2
@@ -129,7 +125,7 @@ class xmlElement(object):
                 self.printed = 1
                 return True
         else:
-            print '/>' + eol_,
+            sys.stdout.write('/>' + eol_)
             # os.write(fd, '/>' + eol_)
             self.printed = 2
 

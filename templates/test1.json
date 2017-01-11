@@ -31,9 +31,13 @@
         {
             "name": "repeat",
             "min": 0,
-            "max": -1,
-            "children": [
-            ]
+            "max": 3,
+            "children": [{
+                "content": [{
+                    "type":"text",
+                    "data":"xmlns:mets"
+                }]
+            }]
         }
     ]
 }
