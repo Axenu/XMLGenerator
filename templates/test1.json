@@ -1,0 +1,39 @@
+{
+    "name": "rootElem",
+    "namespace": "namespace",
+    "min": 0,
+    "max": 1,
+    "attributes": [
+        {
+          "name": "xmlns:mets",
+          "req": 1,
+          "content": [{
+              "type":"var",
+              "data":"xmlns:mets"
+              }]
+        }
+    ],
+    "children": [
+        {
+            "name": "childElem",
+            "namespace": "childNamespace",
+            "min": 0,
+            "max": 1,
+            "children": [
+            ]
+        },
+        {
+            "content": [{
+                "type":"text",
+                "data":"xmlns:mets"
+            }]
+        },
+        {
+            "name": "repeat",
+            "min": 0,
+            "max": -1,
+            "children": [
+            ]
+        }
+    ]
+}
