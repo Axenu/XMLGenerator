@@ -9,7 +9,7 @@
           "req": 1,
           "content": [{
               "type":"var",
-              "data":"xmlns:mets"
+              "data":"var1"
               }]
         }
     ],
@@ -19,8 +19,12 @@
             "namespace": "childNamespace",
             "min": 0,
             "max": 1,
-            "children": [
-            ]
+            "children": [{
+                "content": [{
+                    "type":"text",
+                    "data":"xmlns:mets"
+                }]
+            }]
         },
         {
             "content": [{
@@ -32,10 +36,22 @@
             "name": "repeat",
             "min": 0,
             "max": 3,
+            "repeat": "for object in array",
             "children": [{
-                "content": [{
-                    "type":"text",
-                    "data":"xmlns:mets"
+                "name": "repeat 2 level",
+                "min": 0,
+                "max": 3,
+                "repeat": "for object2 in array2",
+                "children": [{
+                    "content": [{
+                        "type":"var",
+                        "data":"object2.name"
+                    }]
+                },{
+                    "content": [{
+                        "type":"var",
+                        "data":"object.name"
+                    }]
                 }]
             }]
         }

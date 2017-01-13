@@ -9,17 +9,33 @@ import fileinput
 from xmlStructure import xmlElement, xmlAttribute, fileInfo, fileObject, dlog, textElement
 
 
-def resolveVar(var_name):
+def resolveVar(var_name, json_data, local_data={}):
+    parts = var_name.split('.')
+    if len(parts) == 1:
+        if parts[0] in json_data:
+            return json_data[parts[0]]
+        else:
+            print 'MISSIN var: ' + var_name + ' in json_data'
+            return ''
+    else:
+        if len(parts) > 0 and parts[0] in local_data:
+            temp = local_data[parts[0]]
+            if parts[1] in temp:
+                return temp[parts[1]]
+            else:
+                print 'MISSIN var: ' + var_name + ' in json_data'
+                return ''
+        else:
+            print 'MISSIN var: ' + var_name + ' in json_data'
+            return ''
 
-    return 'var'
-
-def resolveContent(content):
+def resolveContent(content, json_data, local_data):
     text = ''
     for textType in content:
         if 'type' in textType:
             if textType['type'] == 'var':
                 # resolve var
-                text += resolveVar(textType['data'])
+                text += resolveVar(textType['data'], json_data, local_data)
             else:
                 #append text
                 text += textType['data']
@@ -28,10 +44,14 @@ def resolveContent(content):
             text += textType['data']
     return text
 
-def createXMLElement(template, json_data, namespace=''):
+def createXMLElement(template, json_data, namespace='', local_data={}):
     if 'name' not in template:
         if 'content' in template:
-            return textElement(resolveContent(template['content']))
+            text = resolveContent(template['content'], json_data, local_data)
+            if text != '':
+                return textElement(text)
+            else:
+                return None
         else:
             print 'FATAL ERROR: missing name on xml Element'
             return None
@@ -47,13 +67,35 @@ def createXMLElement(template, json_data, namespace=''):
             newAttr = xmlAttribute(attribute['name'])
             # solve text content
             if 'content' in attribute:
-                newAttr.value = resolveContent(attribute['content'])
+                newAttr.value = resolveContent(attribute['content'], json_data, local_data)
                 newElement.addAttribute(newAttr)
     if 'children' in template:
         for child in template['children']:
-            el = createXMLElement(child, json_data, namespace)
-            if el != None:
-                newElement.addChild(el)
+            if 'repeat' in child:
+                repeat = child['repeat'].split(' ')
+                var_name = repeat[1]
+                array_name = repeat[3]
+                array = resolveVar(array_name, json_data)
+                if isinstance(array, list):
+                    i = 0
+                    for o in array:
+                        temp = dict(o)
+                        temp['_index'] = i
+                        local = dict(local_data)
+                        if var_name not in local:
+                            local[var_name] = temp
+                        else:
+                            print 'FATAL ERROR: Duplicate varname in nested loops'
+                        el = createXMLElement(child, json_data, namespace, local)
+                        if el != None:
+                            newElement.addChild(el)
+                        i += 1
+                else:
+                    print 'FATAL ERROR: array not found'
+            else:
+                el = createXMLElement(child, json_data, namespace, local_data)
+                if el != None:
+                    newElement.addChild(el)
 
 
     return newElement
@@ -104,6 +146,17 @@ def createXML(inputData):
 
 inputData = {
     "data": {
+        "var1": "Demo var",
+        "array": [{
+                "name": "Hello"
+            }, {
+                "name": "world"
+            }],
+        "array2": [{
+                "name": "Hello2"
+            }, {
+                "name": "world2"
+            }]
     },
     "filesToCreate": {
         "sip.txt":"templates/test1.json"
