@@ -25,6 +25,14 @@
                     "data":"xmlns:mets"
                 }]
             }]
+        },{
+            "extension": "ContainsFilesExtension",
+            "children": [{
+                "content": [{
+                    "type":"text",
+                    "data":"files.name"
+                }]
+            }]
         },
         {
             "content": [{
