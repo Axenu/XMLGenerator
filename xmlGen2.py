@@ -24,7 +24,7 @@ class xmlGenerator(object):
             if parts[0] in self.json_data:
                 return self.json_data[parts[0]]
             else:
-                print 'MISSIN var: ' + var_name + ' in json_data'
+                print 'MISSING var: ' + var_name + ' in json_data'
                 return ''
         else:
             if len(parts) > 0 and parts[0] in local_data:
@@ -32,10 +32,10 @@ class xmlGenerator(object):
                 if parts[1] in temp:
                     return temp[parts[1]]
                 else:
-                    print 'MISSIN var: ' + var_name + ' in json_data'
+                    print 'MISSING var: ' + var_name + ' in json_data'
                     return ''
             else:
-                print 'MISSIN var: ' + var_name + ' in json_data'
+                print 'MISSING var: ' + var_name + ' in json_data'
                 return ''
 
     def resolveContent(self, content, local_data={}):
@@ -54,6 +54,20 @@ class xmlGenerator(object):
         return text
 
     def createXMLElement(self, template, namespace='', local_data={}):
+        if 'extension' in template:
+            extension_name = template['extension']
+            for extension in self.extensions:
+                if extension.selector == extension_name:
+                    print 'found Extension'
+                    if extension.requiresOneRunOnly:
+                        # Save current state for later processing
+                        # create new file to write further data to
+                        pass
+                    else:
+                        # run now
+                        pass
+                    break
+            return
         if 'name' not in template:
             if 'content' in template:
                 text = self.resolveContent(template['content'], local_data)
@@ -61,12 +75,6 @@ class xmlGenerator(object):
                     return textElement(text)
                 else:
                     return None
-            elif 'extension' in template:
-                extension_name = template['extension']
-                for extension in self.extensions:
-                    if extension.selector == extension_name:
-                        print 'found Extension'
-                return
             else:
                 print 'FATAL ERROR: missing name on xml Element'
                 return None
@@ -161,11 +169,13 @@ class xmlExtensionModule(object):
 
     def __init__(self):
         self.selector = ''
+        self.requiresOneRunOnly = False
 
 class xmlFilesExtenstionModule(xmlExtensionModule):
 
     def __init__(self):
         self.selector = 'ContainsFilesExtension'
+        self.requiresOneRunOnly = True
 
     # def handle
 

@@ -1,0 +1,35 @@
+<namespace:rootElem xmlns:mets="Demo var" attribute2="Demo var2">
+   <childNamespace:childElem>
+      xmlns:mets
+   </childNamespace:childElem>
+   <namespace:Fgrp>
+      kite.pdf
+      35095b60-8864-43bb-8e6e-8d032ccf2f09
+   </namespace:Fgrp>
+   Beam.pdf
+   <namespace:extension_child_uuid uuid="14415a9e-5221-4841-b559-44aeca44dd35">
+      14415a9e-5221-4841-b559-44aeca44dd35
+   </namespace:extension_child_uuid>
+   <namespace:empty/>
+   xmlns:mets
+   <demo:repeat>
+      <demo:repeat 2 level>
+         Hello2
+         Hello
+      </demo:repeat 2 level>
+      <demo:repeat 2 level>
+         world2
+         Hello
+      </demo:repeat 2 level>
+   </demo:repeat>
+   <demo:repeat>
+      <demo:repeat 2 level>
+         Hello2
+         world
+      </demo:repeat 2 level>
+      <demo:repeat 2 level>
+         world2
+         world
+      </demo:repeat 2 level>
+   </demo:repeat>
+</namespace:rootElem>

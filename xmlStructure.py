@@ -76,7 +76,7 @@ class xmlElement(object):
         self.karMax = -1
         self.namespace = namespace
         self.completeTagName = ''
-        self.containsFiles = False
+        self.extension = None
         self.printed = 0
         if self.namespace != '':
             self.completeTagName += self.namespace + ':'
@@ -192,23 +192,33 @@ class xmlElement(object):
         #     el.setNamespace(self.namespace)
         self.children.append(el)
 
-class fileInfo():
-    """
-    A way to contain the temporary files which are created
-    """
-    def __init__(self, element, filename, arguments={}, level=0):
-        self.element = element
-        self.filename = filename
-        self.arguments = arguments
+# class fileInfo():
+#     """
+#     A way to contain the temporary files which are created
+#     """
+#     def __init__(self, element, filename, arguments={}, level=0):
+#         self.element = element
+#         self.filename = filename
+#         self.arguments = arguments
+#         self.level = level
+
+class savedState(object):
+
+    def __init__(self, local_data, template, level, namespace, fileID):
+        self.local_data = local_data
+        self.template = template
         self.level = level
+        self.namespace = namespace
+        self.fid = fileID
 
 class fileObject():
     """
     A container class for all the files in the xml
     """
-    def __init__(self, xmlFileName, template, fid):
-        self.xmlFileName = xmlFileName
+    def __init__(self, template, fid, fileName, local_data={}):
         self.template = template
         self.fid = fid
-        self.files = []
-        self.rootElement = None
+        self.local_data = local_data
+        self.fileName = fileName
+        # self.files = []
+        # self.rootElement = None

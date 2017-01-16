@@ -237,16 +237,16 @@ def createXML(inputData):
     The task method for executing the xmlGenerator and completing the xml files
     This is also the TASK to be run in the background.
     """
-    for key, value in inputData['filesToCreate'].iteritems():
-        json_data=open(value).read()
+    for xmlFileName, jsonTemplateName in inputData['filesToCreate'].iteritems():
+        json_data=open(jsonTemplateName).read()
         try:
             data = json.loads(json_data)#, object_pairs_hook=OrderedDict)
         except ValueError as err:
             print err # implement logger
             return  False
         name, rootE = data.items()[0] # root element
-        xmlFile = os.open(key,os.O_RDWR|os.O_CREAT)
-        fob = fileObject(key, value, xmlFile)
+        xmlFile = os.open(xmlFileName,os.O_RDWR|os.O_CREAT)
+        fob = fileObject(xmlFileName, jsonTemplateName, xmlFile)
         sortedFiles.append(fob)
         print rootE
         rootEl = createXMLStructure(name, rootE, inputData['data'], fob)

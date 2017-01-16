@@ -11,6 +11,13 @@
               "type":"var",
               "data":"var1"
               }]
+        },{
+          "name": "attribute2",
+          "req": 1,
+          "content": [{
+              "type":"var",
+              "data":"var2"
+              }]
         }
     ],
     "children": [
@@ -26,13 +33,50 @@
                 }]
             }]
         },{
-            "extension": "ContainsFilesExtension",
-            "children": [{
-                "content": [{
-                    "type":"text",
-                    "data":"files.name"
+            "name":"Fgrp",
+            "children":[{
+                "extension": "ContainsFilesExtension",
+                "children": [{
+                    "content": [{
+                        "type":"var",
+                        "data":"file.name"
+                    }]
+                },{
+                    "content": [{
+                        "type":"var",
+                        "data":"file.uuid"
+                    }]
                 }]
             }]
+            },{
+            "extension": "inlineExtension",
+            "children": [{
+                "content": [{
+                    "type":"var",
+                    "data":"file.name"
+                }]
+            },{
+                "name": "extension_child_uuid",
+                "min": 0,
+                "max": 1,
+                "attributes": [
+                    {
+                        "name":"uuid",
+                        "content":[{
+                            "type":"var",
+                            "data":"file.uuid"
+                            }]
+                    }
+                ],
+                "children": [{
+                    "content": [{
+                        "type":"var",
+                        "data":"file.uuid"
+                    }]
+                }]
+            }]
+        },{
+            "name": "empty"
         },
         {
             "content": [{
@@ -44,6 +88,7 @@
             "name": "repeat",
             "min": 0,
             "max": 3,
+            "namespace": "demo",
             "repeat": "for object in array",
             "children": [{
                 "name": "repeat 2 level",
