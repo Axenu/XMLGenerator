@@ -28,6 +28,7 @@ class xmlGenerator(object):
         self.sortedFiles = []
         self.numberOfFiles = 0
         self.currentFileID = None
+        self.currentFob = None
         self.remainingParts = {}
 
     def addExtension(self, extension):
@@ -86,10 +87,12 @@ class xmlGenerator(object):
                             self.remainingParts[extension.selector] = [state]
 
                         # 2. Create new fid for further parsing
+                        print self.numberOfFiles
                         self.currentFileID = os.open('temp' + str(self.numberOfFiles) + '.txt',os.O_RDWR|os.O_CREAT)
-                        fob = fileObject(template, self.currentFileID, 'temp' + str(self.numberOfFiles) + '.txt', local_data)
+                        # fob = fileObject(template, self.currentFileID, 'temp' + str(self.numberOfFiles) + '.txt', local_data)
+                        self.currentFob.files.append('temp' + str(self.numberOfFiles) + '.txt')
                         self.numberOfFiles += 1
-                        self.sortedFiles.append(fob)
+                        # self.sortedFiles.append(fob)
 
                     else:
                         # run now
@@ -107,7 +110,7 @@ class xmlGenerator(object):
                 text = self.resolveContent(template['content'], local_data)
                 if text != '':
                     os.write(self.currentFileID, pretty_print_string(level) + text + '\n')
-                    print pretty_print_string(level) + text
+                    # print pretty_print_string(level) + text
                 return
             else:
                 print 'FATAL ERROR: missing name on xml Element'
@@ -134,7 +137,7 @@ class xmlGenerator(object):
                     attributes += ' ' + attribute['name'] + '=\"' + self.resolveContent(attribute['content'], local_data) + '\"'
         if 'children' in template:
             os.write(self.currentFileID, pretty_print_string(level) + '<' + tagName + attributes + '>\n')
-            print pretty_print_string(level) + '<' + tagName + attributes + '>'
+            # print pretty_print_string(level) + '<' + tagName + attributes + '>'
             for child in template['children']:
                 if 'repeat' in child:
                     repeat = child['repeat'].split(' ')
@@ -160,10 +163,10 @@ class xmlGenerator(object):
                 else:
                     self.createXMLElement(child, level+1, namespace, local_data)
             os.write(self.currentFileID, pretty_print_string(level) + '</' + tagName + '>\n')
-            print pretty_print_string(level) + '</' + tagName + '>'
+            # print pretty_print_string(level) + '</' + tagName + '>'
         else:
             os.write(self.currentFileID, pretty_print_string(level) + '<' + tagName + attributes + '/>\n')
-            print pretty_print_string(level) + '<' + tagName + attributes + '/>'
+            # print pretty_print_string(level) + '<' + tagName + attributes + '/>'
 
 
 
@@ -173,7 +176,11 @@ class xmlGenerator(object):
         The task method for executing the xmlGenerator and completing the xml files
         This is also the TASK to be run in the background.
         """
-        for xmlFileName, jsonTemplateName in self.filesToCreate.iteritems():
+        self.numberOfFiles = 1
+        for item in self.filesToCreate:
+            xmlFileName = item['xmlFileName']
+            jsonTemplateName = item['templateFileName']
+        # for xmlFileName, jsonTemplateName in self.filesToCreate.iteritems():
             json_template_file=open(jsonTemplateName).read()
             try:
                 template = json.loads(json_template_file)#, object_pairs_hook=OrderedDict)
@@ -182,10 +189,9 @@ class xmlGenerator(object):
                 return  False
             name, rootE = template.items()[0] # root element
             self.currentFileID = os.open(xmlFileName,os.O_RDWR|os.O_CREAT)
-            fob = fileObject(template, self.currentFileID, xmlFileName)
-            self.sortedFiles.append(fob)
-            self.numberOfFiles = 1
-            print rootE
+            self.currentFob = fileObject(template, self.currentFileID, xmlFileName)
+            self.sortedFiles.append(self.currentFob)
+            # print rootE
             self.createXMLElement(template)
         # rootEl.printDebug()
         # fob.rootElement = rootEl
@@ -199,36 +205,18 @@ class xmlGenerator(object):
             if extension != None:
                 extension.executeExtensionOnce(self, states, self.json_data)
 
-        outputFile = self.sortedFiles[0].fid
-        for i in xrange(1, len(self.sortedFiles)):
-            fob = self.sortedFiles[i]
-            fid = os.open(fob.fileName, os.O_RDONLY)
-            while True:
-                data = os.read(fid, 65536)
-                if data:
-                    os.write(outputFile, data)
-                else:
-                    break
-            os.close(fid)
-            os.remove(fob.fileName)
 
-
-    # parseFiles(inputData['folderToParse'])
-    #
-    # # add the tmp files to the bottom of the appropriate file and write out the next section of xml until it's done
-    # for fob in sortedFiles:
-    #     for fin in fob.files:
-    #         f = os.open(fin.filename, os.O_RDONLY)
-    #         while True:
-    #             data = os.read(f, 65536)
-                # if data:
-                #     os.write(fob.fid, data)
-                # else:
-                #     break
-    #         # print more XML
-    #         fob.rootElement.printXML(fob.fid)
-            # os.close(f)
-            # os.remove(fin.filename)
+        for fob in self.sortedFiles:
+            for f in fob.files:
+                fid = os.open(f, os.O_RDONLY)
+                while True:
+                    data = os.read(fid, 65536)
+                    if data:
+                        os.write(fob.fid, data)
+                    else:
+                        break
+                os.close(fid)
+                os.remove(f)
 
 class xmlExtensionModule(object):
 
@@ -297,9 +285,15 @@ inputData = {
                 "name": "world2"
             }]
     },
-    "filesToCreate": {
-        "sip.txt":"templates/test1.json"
-    },
+    "filesToCreate": [
+        {
+            "xmlFileName":"sip.txt",
+            "templateFileName":"templates/test1.json"
+        },{
+            "xmlFileName":"sip2.txt",
+            "templateFileName":"templates/test2.json"
+        }
+    ],
     "folderToParse":"/SIP/"
 }
 

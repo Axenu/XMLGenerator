@@ -220,5 +220,5 @@ class fileObject():
         self.fid = fid
         self.local_data = local_data
         self.fileName = fileName
-        # self.files = []
+        self.files = []
         # self.rootElement = None
