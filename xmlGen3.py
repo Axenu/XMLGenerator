@@ -1,10 +1,6 @@
-import os, re, sys
-import hashlib
-import uuid
+import os
 import json
 import copy
-from collections import OrderedDict
-import fileinput
 
 from xmlStructure import xmlElement, xmlAttribute, fileObject, dlog, textElement, savedState
 from xmlExtensions import xmlFilesExtenstionModule, inlineExtenstionModule
@@ -43,13 +39,22 @@ class xmlGenerator(object):
             else:
                 print 'MISSING var: ' + var_name + ' in json_data'
                 return ''
+        elif len(parts) <= 0:
+            print 'ERROR: var can\'t be empty.'
         else:
-            if len(parts) > 0 and parts[0] in local_data:
+            if parts[0] in local_data:
                 temp = local_data[parts[0]]
                 if parts[1] in temp:
                     return temp[parts[1]]
                 else:
-                    print 'MISSING var: ' + var_name + ' in json_data'
+                    print 'MISSING var: ' + var_name + ' in localdata[' + parts[0] + ']'
+                    return ''
+            elif parts[0] in self.json_data:
+                temp = self.json_data[parts[0]]
+                if parts[1] in temp:
+                    return temp[parts[1]]
+                else:
+                    print 'MISSING var: ' + var_name + ' in json_data[' + parts[0] + ']'
                     return ''
             else:
                 print 'MISSING var: ' + var_name + ' in json_data'
@@ -211,6 +216,19 @@ inputData = {
     "data": {
         "var1": "Demo var",
         "var2": "Demo var2",
+        "xmlns": {
+            "mets":"http://www.loc.gov/METS/",
+            "xlink":"http://www.w3.org/1999/xlink",
+            "xsi":"http://www.w3.org/2001/XMLSchema-instance",
+            "schemaLocation":"http://www.loc.gov/METS/ http://xml.essarch.org/METS/info.xsd"
+        },
+        "mets":{
+            "ID":"55f04f06-21d6-4c15-ba5b-92fad56c8ba2",
+            "objid":"55f04f06-21d6-4c15-ba5b-92fad56c8ba2",
+            "label":"mets_label",
+            "type":"mets_type",
+            "profile":"mets_profile"
+        },
         "array": [{
                 "name": "Hello"
             }, {
