@@ -7,6 +7,7 @@ from collections import OrderedDict
 import fileinput
 
 from xmlStructure import xmlElement, xmlAttribute, fileObject, dlog, textElement, savedState
+from xmlExtensions import xmlFilesExtenstionModule, inlineExtenstionModule
 
 # HELPER Methods
 
@@ -25,7 +26,7 @@ class xmlGenerator(object):
         self.filesToCreate = input_data['filesToCreate']
         self.json_data = input_data['data']
         self.extensions = []
-        self.sortedFiles = []
+        self.createdFiles = []
         self.numberOfFiles = 0
         self.currentFileID = None
         self.currentFob = None
@@ -72,30 +73,22 @@ class xmlGenerator(object):
             for extension in self.extensions:
                 if extension.selector == extension_name:
                     foundExtension = True
-                    # print 'found Extension'
                     if extension.requiresOneRunOnly:
-                        # Save current state for later processing
-                        # create new file to write further data to
-
-                        #detail:
-                        # 1. Save this state for final one run parsing
-                        # save: local_data, template, level, namespace, fileID
+                        # Save this state for final one run parsing
                         state = savedState(local_data, template, level, namespace, self.currentFileID)
                         if extension.selector in self.remainingParts:
                             self.remainingParts[extension.selector].append(state)
                         else:
                             self.remainingParts[extension.selector] = [state]
 
-                        # 2. Create new fid for further parsing
-                        print self.numberOfFiles
-                        self.currentFileID = os.open('temp' + str(self.numberOfFiles) + '.txt',os.O_RDWR|os.O_CREAT)
-                        # fob = fileObject(template, self.currentFileID, 'temp' + str(self.numberOfFiles) + '.txt', local_data)
-                        self.currentFob.files.append('temp' + str(self.numberOfFiles) + '.txt')
+                        # Create new fid for further parsing
+                        fileName = 'temp' + str(self.numberOfFiles) + '.txt'
+                        self.currentFileID = os.open(fileName,os.O_RDWR|os.O_CREAT)
+                        self.currentFob.files.append(fileName)
                         self.numberOfFiles += 1
-                        # self.sortedFiles.append(fob)
 
                     else:
-                        # run now
+                        # execute now
                         if extension.executeExtension(template, level, namespace, local_data):
                             if 'children' in template:
                                 for child in template['children']:
@@ -137,7 +130,6 @@ class xmlGenerator(object):
                     attributes += ' ' + attribute['name'] + '=\"' + self.resolveContent(attribute['content'], local_data) + '\"'
         if 'children' in template:
             os.write(self.currentFileID, pretty_print_string(level) + '<' + tagName + attributes + '>\n')
-            # print pretty_print_string(level) + '<' + tagName + attributes + '>'
             for child in template['children']:
                 if 'repeat' in child:
                     repeat = child['repeat'].split(' ')
@@ -163,10 +155,8 @@ class xmlGenerator(object):
                 else:
                     self.createXMLElement(child, level+1, namespace, local_data)
             os.write(self.currentFileID, pretty_print_string(level) + '</' + tagName + '>\n')
-            # print pretty_print_string(level) + '</' + tagName + '>'
         else:
             os.write(self.currentFileID, pretty_print_string(level) + '<' + tagName + attributes + '/>\n')
-            # print pretty_print_string(level) + '<' + tagName + attributes + '/>'
 
 
 
@@ -180,7 +170,6 @@ class xmlGenerator(object):
         for item in self.filesToCreate:
             xmlFileName = item['xmlFileName']
             jsonTemplateName = item['templateFileName']
-        # for xmlFileName, jsonTemplateName in self.filesToCreate.iteritems():
             json_template_file=open(jsonTemplateName).read()
             try:
                 template = json.loads(json_template_file)#, object_pairs_hook=OrderedDict)
@@ -190,11 +179,8 @@ class xmlGenerator(object):
             name, rootE = template.items()[0] # root element
             self.currentFileID = os.open(xmlFileName,os.O_RDWR|os.O_CREAT)
             self.currentFob = fileObject(template, self.currentFileID, xmlFileName)
-            self.sortedFiles.append(self.currentFob)
-            # print rootE
+            self.createdFiles.append(self.currentFob)
             self.createXMLElement(template)
-        # rootEl.printDebug()
-        # fob.rootElement = rootEl
 
         for extensionName, states in self.remainingParts.iteritems():
             extention = None
@@ -206,7 +192,7 @@ class xmlGenerator(object):
                 extension.executeExtensionOnce(self, states, self.json_data)
 
 
-        for fob in self.sortedFiles:
+        for fob in self.createdFiles:
             for f in fob.files:
                 fid = os.open(f, os.O_RDONLY)
                 while True:
@@ -217,55 +203,6 @@ class xmlGenerator(object):
                         break
                 os.close(fid)
                 os.remove(f)
-
-class xmlExtensionModule(object):
-
-    def __init__(self):
-        self.selector = ''
-        self.requiresOneRunOnly = False
-
-    def executeExtension(self, template, level, namespace, local_data):
-        # to be overitten
-        return True
-
-    def executeExtensionOnce(self, xmlGenerator, states, json_data):
-        # to be overitten
-        return
-
-class xmlFilesExtenstionModule(xmlExtensionModule):
-
-    def __init__(self):
-        self.selector = 'ContainsFilesExtension'
-        self.requiresOneRunOnly = True
-
-    def executeExtensionOnce(self, xmlGenerator, states, json_data):
-        temp = {"name":"kite.pdf"}
-        temp["uuid"] = uuid.uuid4().__str__()
-
-        for state in states:
-            state.local_data['file'] = temp
-            xmlGenerator.currentFileID = state.fid
-            if 'children' in state.template:
-                for child in state.template['children']:
-                    xmlGenerator.createXMLElement(child, state.level, state.namespace, state.local_data)
-                    pass
-        return
-
-
-class inlineExtenstionModule(xmlExtensionModule):
-
-    def __init__(self):
-        self.selector = 'inlineExtension'
-        self.requiresOneRunOnly = False
-
-    def executeExtension(self, template, level, namespace, local_data):
-        # create
-        # print 'executeExtension'
-        temp = {"name":"Beam.pdf"}
-        temp["uuid"] = uuid.uuid4().__str__()
-        if 'file' not in local_data:
-            local_data['file'] = temp
-        return True
 
 
 # Example of inputData:

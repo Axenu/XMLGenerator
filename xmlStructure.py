@@ -192,15 +192,20 @@ class xmlElement(object):
         #     el.setNamespace(self.namespace)
         self.children.append(el)
 
-# class fileInfo():
-#     """
-#     A way to contain the temporary files which are created
-#     """
-#     def __init__(self, element, filename, arguments={}, level=0):
-#         self.element = element
-#         self.filename = filename
-#         self.arguments = arguments
-#         self.level = level
+
+class xmlExtensionModule(object):
+
+    def __init__(self):
+        self.selector = ''
+        self.requiresOneRunOnly = False
+
+    def executeExtension(self, template, level, namespace, local_data):
+        # to be overitten
+        return True
+
+    def executeExtensionOnce(self, xmlGenerator, states, json_data):
+        # to be overitten
+        return
 
 class savedState(object):
 
