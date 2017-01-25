@@ -83,6 +83,65 @@
                 "type":"text",
                 "data":"xmlns:mets"
             }]
+        },{
+            "extension": "inlineExtension",
+            "children": [{
+                "content": [{
+                    "type":"var",
+                    "data":"file.name"
+                }]
+            },{
+                "name": "extension_child_uuid",
+                "min": 0,
+                "max": 1,
+                "attributes": [
+                    {
+                        "name":"uuid",
+                        "content":[{
+                            "type":"var",
+                            "data":"file.uuid"
+                            }]
+                    }
+                ],
+                "children": [{
+                    "content": [{
+                        "type":"var",
+                        "data":"file.uuid"
+                    }]
+                }]
+            }]
+        },{
+            "name": "empty"
+        },
+        {
+            "content": [{
+                "type":"text",
+                "data":"xmlns:mets"
+            }]
+        },
+        {
+            "name": "repeat",
+            "min": 0,
+            "max": 3,
+            "namespace": "demo",
+            "repeat": "for object in array",
+            "children": [{
+                "name": "repeat 2 level",
+                "min": 0,
+                "max": 3,
+                "repeat": "for object2 in array2",
+                "children": [{
+                    "content": [{
+                        "type":"var",
+                        "data":"object2.name"
+                    }]
+                },{
+                    "content": [{
+                        "type":"var",
+                        "data":"object.name"
+                    }]
+                }]
+            }]
         }
     ]
 }

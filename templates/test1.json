@@ -1,7 +1,7 @@
 {
-    "name": "rootElem",
-    "namespace": "namespace",
-    "min": 0,
+    "name": "mets",
+    "namespace": "mets",
+    "min": 1,
     "max": 1,
     "attributes": [
         {
@@ -9,102 +9,238 @@
           "req": 1,
           "content": [{
               "type":"var",
-              "data":"var1"
+              "data":"xmlns.mets"
               }]
         },{
-          "name": "attribute2",
+          "name": "xmlns:xlink",
           "req": 1,
           "content": [{
               "type":"var",
-              "data":"var2"
+              "data":"xmlns.xlink"
+              }]
+        },{
+          "name": "xmlns:xsi",
+          "req": 1,
+          "content": [{
+              "type":"var",
+              "data":"xmlns.xsi"
+              }]
+        },{
+          "name": "xmlns:schemaLocation",
+          "req": 1,
+          "content": [{
+              "type":"var",
+              "data":"xmlns.schemaLocation"
+              }]
+        },{
+          "name": "ID",
+          "req": 1,
+          "content": [{
+              "type":"var",
+              "data":"mets.ID"
+              }]
+        },{
+          "name": "OBJID",
+          "req": 1,
+          "content": [{
+              "type":"var",
+              "data":"mets.objid"
+              }]
+        },{
+          "name": "LABEL",
+          "req": 1,
+          "content": [{
+              "type":"var",
+              "data":"mets.label"
+              }]
+        },{
+          "name": "TYPE",
+          "req": 1,
+          "content": [{
+              "type":"var",
+              "data":"mets.type"
+              }]
+        },{
+          "name": "PROFILE",
+          "req": 1,
+          "content": [{
+              "type":"var",
+              "data":"mets.profile"
               }]
         }
     ],
     "children": [
         {
-            "name": "childElem",
-            "namespace": "childNamespace",
+            "name": "metsHdr",
             "min": 0,
             "max": 1,
             "children": [{
-                "content": [{
-                    "type":"text",
-                    "data":"xmlns:mets"
-                }]
-            }]
-        },{
-            "name":"Fgrp",
-            "children":[{
-                "extension": "ContainsFilesExtension",
-                "children": [{
-                    "content": [{
-                        "type":"var",
-                        "data":"file.name"
-                    }]
-                },{
-                    "content": [{
-                        "type":"var",
-                        "data":"file.uuid"
-                    }]
-                }]
-            }]
+                "name":"agent",
+                "attributes":[{
+                    "name":"ROLE",
+                    "req":1,
+                    "content":[{
+                        "type":"text",
+                        "data":"ARCHIVIST"
+                        }]
+                    }, {
+                        "name":"TYPE",
+                        "req":1,
+                        "content":[{
+                            "type":"text",
+                            "data":"ORGANIZATION"
+                            }]
+                        }],
+                "children":[{
+                    "name":"name",
+                    "min": 1,
+                    "max": 1,
+                    "children": [{
+                        "content":[{
+                            "type": "var",
+                            "data":"archivist_organization_name"
+                            }]
+                        }]
+                    },{
+                        "name":"note",
+                        "min": 1,
+                        "max": 1,
+                        "children": [{
+                            "content":[{
+                                "type": "var",
+                                "data":"archivist_organization_note"
+                                }]
+                            }]
+                        }]
             },{
-            "extension": "inlineExtension",
-            "children": [{
-                "content": [{
-                    "type":"var",
-                    "data":"file.name"
-                }]
-            },{
-                "name": "extension_child_uuid",
-                "min": 0,
-                "max": 1,
-                "attributes": [
-                    {
-                        "name":"uuid",
+                "name":"agent",
+                "repeat":"for agent in agents",
+                "attributes":[{
+                    "name":"ROLE",
+                    "req":1,
+                    "content":[{
+                        "type":"var",
+                        "data":"agent.role"
+                        }]
+                    }, {
+                        "name":"TYPE",
+                        "req":1,
                         "content":[{
                             "type":"var",
-                            "data":"file.uuid"
+                            "data":"agent.type"
                             }]
-                    }
-                ],
-                "children": [{
-                    "content": [{
-                        "type":"var",
-                        "data":"file.uuid"
-                    }]
-                }]
+                        }],
+                "children":[{
+                    "name":"name",
+                    "min": 1,
+                    "max": 1,
+                    "children": [{
+                        "content":[{
+                            "type": "var",
+                            "data":"agent.name"
+                            }]
+                        }]
+                    },{
+                        "name":"note",
+                        "min": 1,
+                        "max": 1,
+                        "children": [{
+                            "content":[{
+                                "type": "var",
+                                "data":"agent.note"
+                                }]
+                            }]
+                        }]
             }]
         },{
-            "name": "empty"
-        },
-        {
-            "content": [{
-                "type":"text",
-                "data":"xmlns:mets"
-            }]
-        },
-        {
-            "name": "repeat",
-            "min": 0,
-            "max": 3,
-            "namespace": "demo",
-            "repeat": "for object in array",
-            "children": [{
-                "name": "repeat 2 level",
-                "min": 0,
-                "max": 3,
-                "repeat": "for object2 in array2",
-                "children": [{
-                    "content": [{
-                        "type":"var",
-                        "data":"object2.name"
-                    }]
-                },{
-                    "content": [{
-                        "type":"var",
-                        "data":"object.name"
-                    }]
+            "name":"fileSec",
+            "min":1,
+            "max":1,
+            "children":[{
+                "name":"fileGrp",
+                "namespace":"mets",
+                "children":[{
+                    "extension": "ContainsFilesExtension",
+                    "children": [{
+                        "name":"file",
+                        "min":1,
+                        "attributes":[
+                            {
+                                "name": "CHECKSUM",
+                                "content": [{
+                                    "type":"var",
+                                    "data":"file.checksum"
+                                    }]
+                            },{
+                                "name": "ID",
+                                "content": [{
+                                    "type":"text",
+                                    "data":"ID"
+                                    },{
+                                    "type":"var",
+                                    "data":"file.uuid"
+                                    }]
+                            },{
+                                "name": "MIMETYPE",
+                                "content": [{
+                                    "type":"var",
+                                    "data":"file.mimetype"
+                                    }]
+                            },{
+                                "name": "CREATED",
+                                "content": [{
+                                    "type":"var",
+                                    "data":"file.created"
+                                    }]
+                            },{
+                                "name": "ext:FILEFORMATNAME",
+                                "content": [{
+                                    "type":"var",
+                                    "data":"file.formatName"
+                                    }]
+                            },{
+                                "name": "SIZE",
+                                "content": [{
+                                    "type":"var",
+                                    "data":"file.size"
+                                    }]
+                            },{
+                                "name": "USE",
+                                "content": [{
+                                    "type":"var",
+                                    "data":"file.use"
+                                    }]
+                            },{
+                                "name": "CHECKSUMTYPE",
+                                "content": [{
+                                    "type":"var",
+                                    "data":"file.checksumType"
+                                    }]
+                            }
+                        ],
+                        "children":[{
+                            "name":"FLocat",
+                            "attributes":[{
+                                "name": "xlink:href",
+                                "content": [{
+                                    "type":"var",
+                                    "data":"file.name"
+                                    }]
+                                },{
+                                "name": "LOCTYPE",
+                                "content": [{
+                                    "type":"var",
+                                    "data":"file.locType"
+                                    }]
+                                },{
+                                "name": "xlink:type",
+                                "content": [{
+                                    "type":"var",
+                                    "data":"file.linkType"
+                                    }]
+                                }]
+                            }]
+                        }]
                 }]
             }]
         }
