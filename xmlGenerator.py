@@ -5,6 +5,10 @@ import copy
 from xmlStructure import xmlElement, xmlAttribute, fileObject, dlog, textElement, savedState
 from xmlExtensions import xmlFilesExtenstionModule, inlineExtenstionModule
 
+#TODO
+# 1. add allowempty flag for elements with attrivutes only
+# 2. Warn for empty required elements
+
 # HELPER Methods
 
 def pretty_print_string(level):
@@ -71,7 +75,7 @@ class xmlGenerator(object):
                 text += textType['data']
         return text
 
-    def createXMLElement(self, template, level=0, namespace='', local_data={}):
+    def createXMLElement(self, template, level=0, namespace='', local_data={}, passed_print=''):
         if 'extension' in template:
             extension_name = template['extension']
             foundExtension = False
@@ -79,6 +83,7 @@ class xmlGenerator(object):
                 if extension.selector == extension_name:
                     foundExtension = True
                     if extension.requiresOneRunOnly:
+                        os.write(self.currentFileID, passed_print);
                         # Save this state for final one run parsing
                         state = savedState(local_data, template, level, namespace, self.currentFileID)
                         if extension.selector in self.remainingParts:
@@ -95,24 +100,30 @@ class xmlGenerator(object):
                     else:
                         # execute now
                         if extension.executeExtension(template, level, namespace, local_data):
+                            haveChild = False
                             if 'children' in template:
                                 for child in template['children']:
-                                    self.createXMLElement(child, level, namespace, local_data)
+                                    if self.createXMLElement(child, level, namespace, local_data, passed_print):
+                                        haveChild = True
+                                        passed_print = ''
+                            if not haveChild:
+                                return False
                         pass
                     break
             if not foundExtension:
                 print "ERROR: Extension \"" + extension_name + "\" is not loaded"
-            return
+                return False
+            return True
         if 'name' not in template:
             if 'content' in template:
                 text = self.resolveContent(template['content'], local_data)
                 if text != '':
-                    os.write(self.currentFileID, pretty_print_string(level) + text + '\n')
+                    os.write(self.currentFileID, passed_print + pretty_print_string(level) + text + '\n')
                     # print pretty_print_string(level) + text
-                return
+                    return True
             else:
                 print 'FATAL ERROR: missing name on xml Element'
-                return
+            return False
 
         tagName = template['name']
 
@@ -129,12 +140,15 @@ class xmlGenerator(object):
             for attribute in template['attributes']:
                 if 'name' not in attribute:
                     print 'FATAL ERROR: missing name on xml attribute'
-                    return
+                    return False
                 # solve text content
                 if 'content' in attribute:
                     attributes += ' ' + attribute['name'] + '=\"' + self.resolveContent(attribute['content'], local_data) + '\"'
+
+        haveChild = False
         if 'children' in template:
-            os.write(self.currentFileID, pretty_print_string(level) + '<' + tagName + attributes + '>\n')
+            # os.write(self.currentFileID, pretty_print_string(level) + '<' + tagName + attributes + '>\n')
+            tempString = passed_print + pretty_print_string(level) + '<' + tagName + attributes + '>\n'
             for child in template['children']:
                 if 'repeat' in child:
                     repeat = child['repeat'].split(' ')
@@ -151,18 +165,31 @@ class xmlGenerator(object):
                                 local[var_name] = temp
                             else:
                                 print 'FATAL ERROR: Duplicate variable name in nested loops'
-                                return
-                            self.createXMLElement(child, level+1, namespace, local)
+                                return False
+                            if self.createXMLElement(child, level+1, namespace, local, tempString):
+                                haveChild = True
+                                tempString = ''
+
                             i += 1
                     else:
                         print 'FATAL ERROR: array not found'
-                        return
+                        return False
                 else:
-                    self.createXMLElement(child, level+1, namespace, local_data)
-            os.write(self.currentFileID, pretty_print_string(level) + '</' + tagName + '>\n')
-        else:
-            os.write(self.currentFileID, pretty_print_string(level) + '<' + tagName + attributes + '/>\n')
+                    if self.createXMLElement(child, level+1, namespace, local_data, tempString):
+                        haveChild = True
+                        tempString = ''
+            if haveChild:
+                os.write(self.currentFileID, pretty_print_string(level) + '</' + tagName + '>\n')
+        if haveChild == False:
+            if attributes != '':
+                os.write(self.currentFileID, passed_print + pretty_print_string(level) + '<' + tagName + attributes + '/>\n')
+                return True
+            else:
+                return False
+                print 'no attributes and no content in element: ' + tagName
 
+        #return true if has content
+        return True
 
 
 
@@ -208,52 +235,3 @@ class xmlGenerator(object):
                         break
                 os.close(fid)
                 os.remove(f)
-
-
-# Example of inputData:
-
-inputData = {
-    "data": {
-        "var1": "Demo var",
-        "var2": "Demo var2",
-        "xmlns": {
-            "mets":"http://www.loc.gov/METS/",
-            "xlink":"http://www.w3.org/1999/xlink",
-            "xsi":"http://www.w3.org/2001/XMLSchema-instance",
-            "schemaLocation":"http://www.loc.gov/METS/ http://xml.essarch.org/METS/info.xsd"
-        },
-        "mets":{
-            "ID":"55f04f06-21d6-4c15-ba5b-92fad56c8ba2",
-            "objid":"55f04f06-21d6-4c15-ba5b-92fad56c8ba2",
-            "label":"mets_label",
-            "type":"mets_type",
-            "profile":"mets_profile"
-        },
-        "array": [{
-                "name": "Hello"
-            }, {
-                "name": "world"
-            }],
-        "array2": [{
-                "name": "Hello2"
-            }, {
-                "name": "world2"
-            }]
-    },
-    "filesToCreate": [
-        {
-            "xmlFileName":"sip.txt",
-            "templateFileName":"templates/test1.json"
-        },{
-            "xmlFileName":"sip2.txt",
-            "templateFileName":"templates/test2.json"
-        }
-    ],
-    "folderToParse":"/SIP/"
-}
-
-# createXML(inputData)
-c = xmlGenerator(inputData)
-c.addExtension(xmlFilesExtenstionModule())
-c.addExtension(inlineExtenstionModule())
-c.createXML()
