@@ -115,6 +115,8 @@
             },{
                 "name":"agent",
                 "repeat":"for agent in agents",
+                "min": 0,
+                "max": 4,
                 "attributes":[{
                     "name":"ROLE",
                     "req":1,

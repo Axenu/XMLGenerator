@@ -1,0 +1,103 @@
+{
+    "name": "mets",
+    "namespace": "mets",
+    "min": 1,
+    "max": 1,
+    "attributes": [
+        {
+          "name": "xmlns:mets",
+          "req": 1,
+          "content": [{
+              "type":"var",
+              "data":"xmlns.mets"
+              }]
+        }
+    ],
+    "children": [
+        {
+            "name": "metsHdr",
+            "min": 0,
+            "max": 1,
+            "children": [{
+                "name":"agent",
+                "attributes":[{
+                    "name":"ROLE",
+                    "req":1,
+                    "content":[{
+                        "type":"text",
+                        "data":"ARCHIVIST"
+                        }]
+                    }, {
+                        "name":"TYPE",
+                        "req":1,
+                        "content":[{
+                            "type":"text",
+                            "data":"ORGANIZATION"
+                            }]
+                        }],
+                "children":[{
+                    "name":"name",
+                    "min": 1,
+                    "max": 1,
+                    "children": [{
+                        "content":[{
+                            "type": "var",
+                            "data":"archivist_organization_name"
+                            }]
+                        }]
+                    },{
+                        "name":"note",
+                        "min": 1,
+                        "max": 1,
+                        "children": [{
+                            "content":[{
+                                "type": "var",
+                                "data":"archivist_organization_note"
+                                }]
+                            }]
+                        }]
+            },{
+                "name":"agent",
+                "repeat":"for agent in agents",
+                "min": 0,
+                "max": 4,
+                "attributes":[{
+                    "name":"ROLE",
+                    "req":1,
+                    "content":[{
+                        "type":"var",
+                        "data":"agent.role"
+                        }]
+                    }, {
+                        "name":"TYPE",
+                        "req":1,
+                        "content":[{
+                            "type":"var",
+                            "data":"agent.type"
+                            }]
+                        }],
+                "children":[{
+                    "name":"name",
+                    "min": 1,
+                    "max": 1,
+                    "children": [{
+                        "content":[{
+                            "type": "var",
+                            "data":"agent.name"
+                            }]
+                        }]
+                    },{
+                        "name":"note",
+                        "min": 1,
+                        "max": 1,
+                        "children": [{
+                            "content":[{
+                                "type": "var",
+                                "data":"agent.note"
+                                }]
+                            }]
+                        }]
+            }]
+        }
+    ]
+}
